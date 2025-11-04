@@ -7,3 +7,6 @@
     pm2 logs athena-snapshot
 
     pm2 restart athena-snapshot
+
+Mode Module no "type": "commonjs",
+pm2 start ecosystem.config.cjs

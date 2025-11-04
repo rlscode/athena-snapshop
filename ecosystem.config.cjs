@@ -11,7 +11,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production'
       },
-      env_file: '.env' // PM2 cargará las variables desde este archivo
+      env_file: '.env'
     }
   ]
 };
