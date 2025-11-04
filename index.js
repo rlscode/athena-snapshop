@@ -719,12 +719,22 @@ async function runSnapshot() {
 
   const finishedAt = new Date();
   console.log('🚀 ~ runSnapshot ~ finishedAt:', finishedAt);
-  // await sendSummaryEmail({ startedAt, finishedAt, results: ok, errors: errs });
+  await sendSummaryEmail({ startedAt, finishedAt, results: ok, errors: errs });
 
   // Si quieres que el proceso permanezca vivo en modo scheduler, no hagas process.exit aquí
   // En modo "ejecución única", podrías salir con código según errores:
   if (process.env.ONE_SHOT === 'true') {
     process.exit(errs.length ? 1 : 0);
+  }
+
+  // Si estás ejecutando bajo PM2 y quieres que PM2 reinicie el proceso cuando haya errores,
+  // activa RESTART_ON_ERROR=true en tu entorno/archivo de configuración de PM2.
+  if (process.env.RESTART_ON_ERROR === 'true' && errs.length > 0) {
+    console.error(
+      'Errores detectados → saliendo para que PM2 reinicie el proceso.'
+    );
+    // Dar tiempo para flush de logs/notificaciones antes de salir
+    setTimeout(() => process.exit(1), 3000);
   }
 }
 
@@ -750,6 +760,7 @@ cron.schedule(
   }
 );
 
+console.log('RUN_ON_START value:', process.env.RUN_ON_START);
 console.log('RUN_ON_START value:', process.env.RUN_ON_START);
 console.log(
   `🗓️ Scheduler activo (${SCHEDULE_MODE}) con expresión "${CRON_EXPR}".`
