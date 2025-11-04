@@ -274,9 +274,10 @@ function convertValue(value, columnName, columnType) {
 const SCHEDULE_MODE = (process.env.SCHEDULE_MODE || 'daily').toLowerCase();
 // Diario: 08:00 / Mensual: día 1 a las 03:00
 const CRON_EXPRESSIONS = {
-  daily: '0 8 * * *',
+  daily: '0 6 * * *',
   monthly: '0 3 1 * *'
 };
+
 const CRON_EXPR = CRON_EXPRESSIONS[SCHEDULE_MODE] || CRON_EXPRESSIONS.daily;
 
 // Notificación
@@ -559,6 +560,16 @@ async function bulkInsertToSQL(rows, tableName, customMappings = {}) {
     const insertableColumns = headers
       .filter((h) => validColumns.includes(h.toLowerCase()))
       .concat('snapshot_date');
+
+    /* Avoid duplicate by snapshot_date */
+    await pool
+      .request()
+      .input('snap', sql.Date, snapshotDate)
+      .query(
+        `DELETE FROM dbo.${sqlQuoteIdent(tableName)} WHERE ${sqlQuoteIdent(
+          'snapshot_date'
+        )} = @snap;`
+      );
 
     // console.log(`📋 Columnas insertables: ${insertableColumns.join(', ')}`);
 
